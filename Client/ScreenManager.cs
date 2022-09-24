@@ -36,5 +36,10 @@ namespace Client
         {
             currentScreen.Draw();
         }
+
+        public static void Unload()
+        {
+            currentScreen.Unload();
+        }
     }
 }

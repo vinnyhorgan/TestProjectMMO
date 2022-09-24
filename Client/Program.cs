@@ -21,9 +21,13 @@ namespace Client
 
             ScreenManager.Switch(new MainScreen());
 
+            NetworkManager.Load();
+
             while (!Raylib.WindowShouldClose())
             {
                 float dt = Raylib.GetFrameTime();
+
+                NetworkManager.Update();
 
                 imgui.Update(dt);
 
@@ -41,6 +45,10 @@ namespace Client
             }
 
             imgui.Dispose();
+
+            ScreenManager.Unload();
+
+            NetworkManager.Unload();
 
             Raylib.CloseAudioDevice();
             Raylib.CloseWindow();
