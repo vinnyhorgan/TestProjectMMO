@@ -3,11 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Humper" Version="0.5.8" />
+    <PackageReference Include="ImGui.NET" Version="1.87.3" />
     <PackageReference Include="Raylib-cs" Version="4.0.0.2" />
   </ItemGroup>
 
