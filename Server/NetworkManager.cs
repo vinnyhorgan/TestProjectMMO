@@ -1,9 +1,8 @@
 using System;
 
-using RiptideNetworking;
 using RiptideNetworking.Utils;
 
-namespace Client
+namespace Server
 {
     public enum ClientToServerId : ushort
     {
@@ -18,7 +17,7 @@ namespace Client
 
     public static class NetworkManager
     {
-        public static RiptideNetworking.Client Client;
+        public static RiptideNetworking.Server Server;
 
         static float tickrate = 0.1f;
         static float timer = 0f;
@@ -27,8 +26,10 @@ namespace Client
         {
             RiptideLogger.Initialize(Console.WriteLine, true);
 
-            Client = new();
-            Client.Connect("127.0.0.1:1234");
+            Server = new();
+            Server.Start(1234, 10);
+
+            Server.ClientDisconnected += (s, e) => Player.list.Remove(e.Id);
         }
 
         public static void Update(float dt)
@@ -37,7 +38,7 @@ namespace Client
 
             if (timer > tickrate)
             {
-                Client.Tick();
+                Server.Tick();
                 Console.WriteLine("Ticked!");
 
                 timer = 0;
@@ -46,7 +47,7 @@ namespace Client
 
         public static void Unload()
         {
-            Client.Disconnect();
+            Server.Stop();
         }
     }
 }

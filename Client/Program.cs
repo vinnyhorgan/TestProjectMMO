@@ -16,18 +16,18 @@ namespace Client
 
             Raylib.InitAudioDevice();
 
+            NetworkManager.Load();
+
             ImguiController imgui = new ImguiController();
             imgui.Load(screenWidth, screenHeight);
 
             ScreenManager.Switch(new MainScreen());
 
-            NetworkManager.Load();
-
             while (!Raylib.WindowShouldClose())
             {
                 float dt = Raylib.GetFrameTime();
 
-                NetworkManager.Update();
+                NetworkManager.Update(dt);
 
                 imgui.Update(dt);
 
@@ -44,11 +44,11 @@ namespace Client
                 Raylib.EndDrawing();
             }
 
+            NetworkManager.Unload();
+
             imgui.Dispose();
 
             ScreenManager.Unload();
-
-            NetworkManager.Unload();
 
             Raylib.CloseAudioDevice();
             Raylib.CloseWindow();
