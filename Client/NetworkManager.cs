@@ -3,6 +3,8 @@ using System;
 using RiptideNetworking;
 using RiptideNetworking.Utils;
 
+using Raylib_cs;
+
 namespace Client
 {
     public enum ClientToServerId : ushort
@@ -13,7 +15,9 @@ namespace Client
 
     public enum ServerToClientId : ushort
     {
-
+        PlayerSpawned = 1,
+        PlayerMovement,
+        Players
     }
 
     public static class NetworkManager
@@ -29,6 +33,10 @@ namespace Client
 
             Client = new();
             Client.Connect("127.0.0.1:1234");
+
+            Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.Name);
+            message.AddString("Jhonny " + Raylib.GetRandomValue(1, 1000000));
+            NetworkManager.Client.Send(message);
         }
 
         public static void Update(float dt)
@@ -38,7 +46,6 @@ namespace Client
             if (timer > tickrate)
             {
                 Client.Tick();
-                Console.WriteLine("Ticked!");
 
                 timer = 0;
             }

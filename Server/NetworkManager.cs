@@ -12,24 +12,26 @@ namespace Server
 
     public enum ServerToClientId : ushort
     {
-
+        PlayerSpawned = 1,
+        PlayerMovement,
+        Players
     }
 
     public static class NetworkManager
     {
         public static RiptideNetworking.Server Server;
 
-        static float tickrate = 0.1f;
-        static float timer = 0f;
+        private static float tickrate = 0.1f;
+        private static float timer = 0f;
 
         public static void Load()
         {
-            RiptideLogger.Initialize(Console.WriteLine, true);
+            RiptideLogger.Initialize(MainScreen.Log, true);
 
             Server = new();
-            Server.Start(1234, 10);
+            Server.Start(1234, 100);
 
-            Server.ClientDisconnected += (s, e) => Player.list.Remove(e.Id);
+            Server.ClientDisconnected += (s, e) => Player.List.Remove(e.Id);
         }
 
         public static void Update(float dt)
@@ -39,7 +41,6 @@ namespace Server
             if (timer > tickrate)
             {
                 Server.Tick();
-                Console.WriteLine("Ticked!");
 
                 timer = 0;
             }

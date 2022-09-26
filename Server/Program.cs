@@ -3,27 +3,27 @@ using ImGuiNET;
 
 namespace Server
 {
-    public class Program
+    class Program
     {
         public static void Main(string[] args)
         {
-            const int screenWidth = 640;
-            const int screenHeight = 480;
+            const int screenWidth = 800;
+            const int screenHeight = 600;
 
             Raylib.SetTraceLogLevel(TraceLogLevel.LOG_NONE);
             Raylib.SetConfigFlags(ConfigFlags.FLAG_MSAA_4X_HINT);
             Raylib.InitWindow(screenWidth, screenHeight, "Project MMO Server");
             Raylib.SetTargetFPS(60);
-
-            Raylib.InitAudioDevice();
+            Raylib.SetExitKey(KeyboardKey.KEY_NULL);
 
             NetworkManager.Load();
 
             ImguiController imgui = new ImguiController();
-            imgui.Load(screenWidth, screenHeight);
 
             ImGuiIOPtr io = ImGui.GetIO();
             io.ConfigFlags = ImGuiConfigFlags.DockingEnable;
+
+            imgui.Load(screenWidth, screenHeight);
 
             MainScreen mainScreen = new MainScreen();
 
@@ -33,9 +33,9 @@ namespace Server
 
                 NetworkManager.Update(dt);
 
-                imgui.Update(dt);
-
                 mainScreen.Update(dt);
+
+                imgui.Update(dt);
 
                 Raylib.BeginDrawing();
 
@@ -56,7 +56,6 @@ namespace Server
 
             mainScreen.Unload();
 
-            Raylib.CloseAudioDevice();
             Raylib.CloseWindow();
         }
     }

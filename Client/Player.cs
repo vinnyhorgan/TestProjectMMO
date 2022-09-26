@@ -1,33 +1,30 @@
 using System;
-using System.Numerics;
+using System.Collections.Generic;
 
 using Raylib_cs;
-using Humper;
-using Humper.Responses;
 using RiptideNetworking;
 
 namespace Client
 {
     public class Player
     {
-        // int speed = 200;
-        IBox collider;
+        public static Dictionary<ushort, Player> list = new Dictionary<ushort, Player>();
 
-        bool[] inputs = new bool[4];
+        static bool[] inputs = new bool[4];
 
-        public Player(float x, float y)
+        public ushort Id;
+        public string Name;
+        public int X = 0;
+        public int Y = 0;
+
+        public Player(ushort id, string name)
         {
-            collider = MainScreen.World.Create(x, y, 25, 25);
-
-            Message message = Message.Create(MessageSendMode.reliable, 1);
-            message.AddString("Jhonny Be Goode");
-            NetworkManager.Client.Send(message);
+            Id = id;
+            Name = name;
         }
 
-        public void Update(float dt)
+        public static void Update(float dt)
         {
-            // Vector2 velocity = new Vector2();
-
             if (Raylib.IsKeyDown(KeyboardKey.KEY_W))
                 inputs[0] = true;
 
@@ -42,20 +39,56 @@ namespace Client
 
             Message message = Message.Create(MessageSendMode.unreliable, ClientToServerId.Input);
             message.AddBools(inputs, false);
-
-            // Console.WriteLine("BYTES: " + message.WrittenLength);
-
             NetworkManager.Client.Send(message);
 
             for (int i = 0; i < inputs.Length; i++)
                 inputs[i] = false;
-
-            // collider.Move(collider.X + velocity.X * speed * dt, collider.Y + velocity.Y * speed * dt, (collision) => CollisionResponses.Slide);
         }
 
-        public void Draw()
+        public static void Draw()
         {
-            Raylib.DrawRectangle((int)collider.X, (int)collider.Y, (int)collider.Width, (int)collider.Height, Color.RED);
+            foreach (KeyValuePair<ushort, Player> entry in list)
+            {
+                Raylib.DrawRectangle(entry.Value.X, entry.Value.Y, 25, 25, Color.RED);
+            }
+        }
+
+        [MessageHandler((ushort)ServerToClientId.Players)]
+        private static void PlayersHandler(Message message)
+        {
+            ushort[] ids = message.GetUShorts();
+
+            foreach (ushort id in ids)
+            {
+                Player newPlayer = new Player(id, "George");
+
+                list.TryAdd(id, newPlayer);
+            }
+
+            Console.WriteLine("Player added");
+        }
+
+        [MessageHandler((ushort)ServerToClientId.PlayerSpawned)]
+        private static void PlayerSpawnedHandler(Message message)
+        {
+            ushort id = message.GetUShort();
+
+            Player newPlayer = new Player(id, message.GetString());
+
+            list.Add(id, newPlayer);
+
+            Console.WriteLine("Player added");
+        }
+
+        [MessageHandler((ushort)ServerToClientId.PlayerMovement)]
+        private static void PlayerMovementHandler(Message message)
+        {
+            ushort id = message.GetUShort();
+
+            Player player = list[id];
+
+            player.X = message.GetInt();
+            player.Y = message.GetInt();
         }
     }
 }
