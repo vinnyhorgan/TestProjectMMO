@@ -8,7 +8,7 @@ namespace Client
 {
     public class Player
     {
-        public static Dictionary<ushort, Player> list = new Dictionary<ushort, Player>();
+        public static Dictionary<ushort, Player> List = new Dictionary<ushort, Player>();
 
         static bool[] inputs = new bool[4];
 
@@ -37,9 +37,10 @@ namespace Client
             if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
                 inputs[3] = true;
 
-            Message message = Message.Create(MessageSendMode.unreliable, ClientToServerId.Input);
-            message.AddBools(inputs, false);
-            NetworkManager.Client.Send(message);
+            Message inputMessage = Message.Create(MessageSendMode.unreliable, ClientToServerId.Input);
+            inputMessage.AddBools(inputs, false);
+
+            NetworkManager.Client.Send(inputMessage);
 
             for (int i = 0; i < inputs.Length; i++)
                 inputs[i] = false;
@@ -47,48 +48,43 @@ namespace Client
 
         public static void Draw()
         {
-            foreach (KeyValuePair<ushort, Player> entry in list)
+            foreach (KeyValuePair<ushort, Player> entry in List)
             {
                 Raylib.DrawRectangle(entry.Value.X, entry.Value.Y, 25, 25, Color.RED);
             }
         }
 
-        [MessageHandler((ushort)ServerToClientId.Players)]
-        private static void PlayersHandler(Message message)
+        [MessageHandler((ushort)ServerToClientId.Spawn)]
+        private static void SpawnHandler(Message message)
         {
-            ushort[] ids = message.GetUShorts();
+            ushort id = message.GetUShort();
+            string name = message.GetString();
 
-            foreach (ushort id in ids)
+            Player newPlayer = new Player(id, name);
+
+            List.Add(id, newPlayer);
+        }
+
+        [MessageHandler((ushort)ServerToClientId.Disconnect)]
+        private static void DisconnectHandler(Message message)
+        {
+            ushort id = message.GetUShort();
+
+            List.Remove(id);
+        }
+
+        [MessageHandler((ushort)ServerToClientId.Movement)]
+        private static void MovementHandler(Message message)
+        {
+            ushort id = message.GetUShort();
+
+            if (List.ContainsKey(id))
             {
-                Player newPlayer = new Player(id, "George");
+                Player player = Player.List[id];
 
-                list.TryAdd(id, newPlayer);
+                player.X = message.GetInt();
+                player.Y = message.GetInt();
             }
-
-            Console.WriteLine("Player added");
-        }
-
-        [MessageHandler((ushort)ServerToClientId.PlayerSpawned)]
-        private static void PlayerSpawnedHandler(Message message)
-        {
-            ushort id = message.GetUShort();
-
-            Player newPlayer = new Player(id, message.GetString());
-
-            list.Add(id, newPlayer);
-
-            Console.WriteLine("Player added");
-        }
-
-        [MessageHandler((ushort)ServerToClientId.PlayerMovement)]
-        private static void PlayerMovementHandler(Message message)
-        {
-            ushort id = message.GetUShort();
-
-            Player player = list[id];
-
-            player.X = message.GetInt();
-            player.Y = message.GetInt();
         }
     }
 }

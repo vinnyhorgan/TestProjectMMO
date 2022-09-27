@@ -11,7 +11,7 @@ namespace Server
             const int screenHeight = 600;
 
             Raylib.SetTraceLogLevel(TraceLogLevel.LOG_NONE);
-            Raylib.SetConfigFlags(ConfigFlags.FLAG_MSAA_4X_HINT);
+            Raylib.SetConfigFlags(ConfigFlags.FLAG_MSAA_4X_HINT | ConfigFlags.FLAG_WINDOW_RESIZABLE);
             Raylib.InitWindow(screenWidth, screenHeight, "Project MMO Server");
             Raylib.SetTargetFPS(60);
             Raylib.SetExitKey(KeyboardKey.KEY_NULL);
@@ -53,8 +53,6 @@ namespace Server
             NetworkManager.Unload();
 
             imgui.Dispose();
-
-            mainScreen.Unload();
 
             Raylib.CloseWindow();
         }

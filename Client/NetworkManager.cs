@@ -9,15 +9,15 @@ namespace Client
 {
     public enum ClientToServerId : ushort
     {
-        Name = 1,
+        Connect = 1,
         Input
     }
 
     public enum ServerToClientId : ushort
     {
-        PlayerSpawned = 1,
-        PlayerMovement,
-        Players
+        Spawn = 1,
+        Movement,
+        Disconnect
     }
 
     public static class NetworkManager
@@ -34,9 +34,10 @@ namespace Client
             Client = new();
             Client.Connect("127.0.0.1:1234");
 
-            Message message = Message.Create(MessageSendMode.reliable, ClientToServerId.Name);
-            message.AddString("Jhonny " + Raylib.GetRandomValue(1, 1000000));
-            NetworkManager.Client.Send(message);
+            Message connectMessage = Message.Create(MessageSendMode.reliable, ClientToServerId.Connect);
+            connectMessage.AddString("Jhonny " + Raylib.GetRandomValue(1, 1000000));
+
+            NetworkManager.Client.Send(connectMessage);
         }
 
         public static void Update(float dt)

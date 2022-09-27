@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using RiptideNetworking;
 
@@ -23,22 +21,35 @@ namespace Server
             Name = name;
         }
 
-        [MessageHandler((ushort)ClientToServerId.Name)]
-        private static void NameHandler(ushort clientId, Message message)
+        [MessageHandler((ushort)ClientToServerId.Connect)]
+        private static void ConnectHandler(ushort clientId, Message message)
         {
             Player newPlayer = new Player(clientId, message.GetString());
 
             List.Add(clientId, newPlayer);
 
-            Console.WriteLine($"{newPlayer.Name} connected!");
+            MainScreen.Log($"{newPlayer.Name} connected!");
 
-            ushort[] ids = List.Keys.ToArray();
+            foreach (KeyValuePair<ushort, Player> entry in List)
+            {
+                Message playersMessage = Message.Create(MessageSendMode.reliable, ServerToClientId.Spawn);
+                playersMessage.AddUShort(entry.Value.Id);
+                playersMessage.AddString(entry.Value.Name);
+                playersMessage.AddInt(entry.Value.X);
+                playersMessage.AddInt(entry.Value.Y);
 
-            Message spawnMessage = Message.Create(MessageSendMode.reliable, ServerToClientId.PlayerSpawned);
-            spawnMessage.AddUShort(clientId);
-            spawnMessage.AddString(newPlayer.Name);
+                NetworkManager.BytesSentCounter += playersMessage.WrittenLength;
 
-            NetworkManager.Server.SendToAll(spawnMessage);
+                NetworkManager.Server.Send(playersMessage, clientId);
+            }
+
+            Message newPlayerMessage = Message.Create(MessageSendMode.reliable, ServerToClientId.Spawn);
+            newPlayerMessage.AddUShort(newPlayer.Id);
+            newPlayerMessage.AddString(newPlayer.Name);
+
+            NetworkManager.BytesSentCounter += newPlayerMessage.WrittenLength;
+
+            NetworkManager.Server.SendToAll(newPlayerMessage, clientId);
         }
 
         [MessageHandler((ushort)ClientToServerId.Input)]
@@ -62,10 +73,12 @@ namespace Server
             if (inputs[3])
                 player.X += (int)(500 * dt);
 
-            Message moveMessage = Message.Create(MessageSendMode.unreliable, ServerToClientId.PlayerMovement);
+            Message moveMessage = Message.Create(MessageSendMode.unreliable, ServerToClientId.Movement);
             moveMessage.AddUShort(clientId);
             moveMessage.AddInt(player.X);
             moveMessage.AddInt(player.Y);
+
+            NetworkManager.BytesSentCounter += moveMessage.WrittenLength;
 
             NetworkManager.Server.SendToAll(moveMessage);
         }

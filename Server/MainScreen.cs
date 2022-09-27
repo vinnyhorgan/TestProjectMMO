@@ -10,8 +10,6 @@ namespace Server
 
         private int oldLineCount = 0;
 
-        private string commandBuffer = "";
-
         public static void Log(string text)
         {
             ConsoleBuffer.Add(text);
@@ -31,6 +29,17 @@ namespace Server
         {
             if (ImGui.BeginMainMenuBar())
             {
+                if (ImGui.BeginMenu("Console"))
+                {
+                    if (ImGui.MenuItem("Clear Buffer"))
+                    {
+                        ConsoleBuffer.Clear();
+                        oldLineCount = 0;
+                    }
+
+                    ImGui.EndMenu();
+                }
+
                 if (ImGui.BeginMenu("Help"))
                 {
                     if (ImGui.MenuItem("About"))
@@ -60,12 +69,12 @@ namespace Server
             }
             ImGui.End();
 
-            if (ImGui.Begin("Controls"))
+            if (ImGui.Begin("Network Stats"))
             {
-                ImGui.Button("Restart");
-                ImGui.Button("Stop");
-
-                ImGui.InputText("Command", ref commandBuffer, 100);
+                ImGui.Text($"Bytes Received /s: {NetworkManager.BytesReceivedPerSecond}");
+                ImGui.Text($"Bytes Sent /s: {NetworkManager.BytesSentPerSecond}");
+                ImGui.Separator();
+                ImGui.Text($"Bytes Moved /s: {NetworkManager.BytesReceivedPerSecond + NetworkManager.BytesSentPerSecond}");
             }
             ImGui.End();
 
@@ -76,15 +85,19 @@ namespace Server
                     ImGui.Text(player.Value.Id.ToString());
                     ImGui.SameLine();
                     ImGui.Text(player.Value.Name);
+                    ImGui.SameLine();
+
+                    if (ImGui.Button("Kick"))
+                    {
+                        NetworkManager.Server.DisconnectClient(player.Value.Id);
+
+                        Log($"Kicked {player.Value.Name}");
+                    }
+
                     ImGui.Separator();
                 }
             }
             ImGui.End();
-        }
-
-        public void Unload()
-        {
-
         }
     }
 }
